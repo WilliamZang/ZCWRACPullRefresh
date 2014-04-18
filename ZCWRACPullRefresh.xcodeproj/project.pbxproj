@@ -23,6 +23,7 @@
 		B944B19E1900B74200951A2D /* ZCWRACPullRefreshTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B944B19D1900B74200951A2D /* ZCWRACPullRefreshTests.m */; };
 		B944B1AA1900BB4100951A2D /* ZCWPullRefreshControl.m in Sources */ = {isa = PBXBuildFile; fileRef = B944B1A91900BB4100951A2D /* ZCWPullRefreshControl.m */; };
 		B944B1AD1901060D00951A2D /* ZCWExample1TableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B944B1AC1901060D00951A2D /* ZCWExample1TableViewController.m */; };
+		B9C465931901314E008B7563 /* ZCWLoadMoreControl.m in Sources */ = {isa = PBXBuildFile; fileRef = B9C465921901314E008B7563 /* ZCWLoadMoreControl.m */; };
 		C2CD191CE07549788B03350A /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = ADE04D38BBB54D6886B2F5DF /* libPods.a */; };
 /* End PBXBuildFile section */
 
@@ -61,6 +62,8 @@
 		B944B1A91900BB4100951A2D /* ZCWPullRefreshControl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZCWPullRefreshControl.m; sourceTree = "<group>"; };
 		B944B1AB1901060D00951A2D /* ZCWExample1TableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZCWExample1TableViewController.h; sourceTree = "<group>"; };
 		B944B1AC1901060D00951A2D /* ZCWExample1TableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZCWExample1TableViewController.m; sourceTree = "<group>"; };
+		B9C465911901314E008B7563 /* ZCWLoadMoreControl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZCWLoadMoreControl.h; sourceTree = "<group>"; };
+		B9C465921901314E008B7563 /* ZCWLoadMoreControl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZCWLoadMoreControl.m; sourceTree = "<group>"; };
 		DED0CDB0414140548B5131D9 /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -172,6 +175,8 @@
 			children = (
 				B944B1A81900BB4100951A2D /* ZCWPullRefreshControl.h */,
 				B944B1A91900BB4100951A2D /* ZCWPullRefreshControl.m */,
+				B9C465911901314E008B7563 /* ZCWLoadMoreControl.h */,
+				B9C465921901314E008B7563 /* ZCWLoadMoreControl.m */,
 			);
 			path = ZCWTableViewPullRefresh;
 			sourceTree = "<group>";
@@ -312,6 +317,7 @@
 				B944B1891900B74200951A2D /* ZCWViewController.m in Sources */,
 				B944B17F1900B74200951A2D /* main.m in Sources */,
 				B944B1AD1901060D00951A2D /* ZCWExample1TableViewController.m in Sources */,
+				B9C465931901314E008B7563 /* ZCWLoadMoreControl.m in Sources */,
 				B944B1831900B74200951A2D /* ZCWAppDelegate.m in Sources */,
 				B944B1AA1900BB4100951A2D /* ZCWPullRefreshControl.m in Sources */,
 			);
