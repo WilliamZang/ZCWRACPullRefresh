@@ -8,9 +8,11 @@
 
 #import "ZCWExample1TableViewController.h"
 #import "ZCWPullRefreshControl.h"
+#import "ZCWLoadMoreControl.h"
 
 @interface ZCWExample1TableViewController ()
 @property (nonatomic, strong) ZCWPullRefreshControl *pullRefreshControl;
+@property (nonatomic, strong) ZCWLoadMoreControl *loadMoreControl;
 @end
 
 @implementation ZCWExample1TableViewController
@@ -33,7 +35,7 @@
     self.pullRefreshControl.backgroundColor = [UIColor grayColor];
     
     [self.pullRefreshControl.pullRefreshState subscribeNext:^(RACTuple *values) {
-        NSLog(@"%@ - %@", values.first, values.second);
+        NSLog(@"PullRefresh %@ - %@", values.first, values.second);
     }];
     self.pullRefreshControl.refreshCommand = [[RACCommand alloc] initWithSignalBlock:^RACSignal *(id input) {
         return [RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
@@ -50,7 +52,27 @@
         }];
     }];
 
-
+    self.loadMoreControl = [[ZCWLoadMoreControl alloc] initWithFrame:CGRectMake(0, 0, 320.0, 65.0)];
+    self.loadMoreControl.backgroundColor = [UIColor redColor];
+    
+    [self.loadMoreControl.loadMoreState subscribeNext:^(RACTuple *values) {
+        NSLog(@"LoadMore %@ - %@", values.first, values.second);
+    }];
+    
+    self.loadMoreControl.loadMoreCommand = [[RACCommand alloc] initWithSignalBlock:^RACSignal *(id input) {
+        return [RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
+            __block CGFloat progress = 0;
+            [[RACScheduler mainThreadScheduler] after:[NSDate dateWithTimeIntervalSinceNow:0.1] repeatingEvery:0.1 withLeeway:0.1 schedule:^{
+                progress += 0.1;
+                [subscriber sendNext:@(progress)];
+                if (progress > 1) {
+                    [subscriber sendCompleted];
+                }
+            }];
+            
+            return nil;
+        }];
+    }];
     // Uncomment the following line to preserve selection between presentations.
     // self.clearsSelectionOnViewWillAppear = NO;
     
@@ -60,7 +82,9 @@
 
 - (void)viewDidAppear:(BOOL)animated
 {
+    [super viewDidAppear:animated];
     [self.pullRefreshControl addToScrollView:self.tableView];
+    [self.loadMoreControl addToScrollView:self.tableView];
 }
 - (void)didReceiveMemoryWarning
 {
