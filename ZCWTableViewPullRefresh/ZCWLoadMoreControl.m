@@ -55,15 +55,21 @@
     [self removeFromSuperview];
     
     RACSignal *scrollViewDidScroll = [(NSObject *)scrollViewDelegate rac_signalForSelector:@selector(scrollViewDidScroll:) fromProtocol:@protocol(UIScrollViewDelegate)];
+    @weakify(self);
+    [RACObserve(scrollView, contentSize) subscribeNext:^(NSValue *value) {
+        @strongify(self);
+        CGSize size;
+        [value getValue:&size];
+        CGRect selfFrame = self.frame;
+        selfFrame.origin.y = size.height;
+        self.frame = selfFrame;
+    }];
     
-    CGRect selfFrame = self.frame;
-    selfFrame.origin.y = scrollView.contentSize.height;
-    self.frame = selfFrame;
     
     [scrollView addSubview:self];
     self.oldScrollViewContentInset = scrollView.contentInset;
     [self.lastScrollViewDisposable isDisposed];
-    @weakify(self);
+    
     
     [self.loadMoreCommand.executionSignals subscribeNext:^(RACSignal *executionSignal) {
         @strongify(self);
