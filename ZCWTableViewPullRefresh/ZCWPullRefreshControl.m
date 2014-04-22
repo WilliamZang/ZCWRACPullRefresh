@@ -52,7 +52,24 @@
     self.oldScrollViewContentInset = scrollView.contentInset;
     [self.lastScrollViewDisposable isDisposed];
     @weakify(self);
-
+    [self.refreshCommand.executionSignals subscribeNext:^(RACSignal *executionSignal) {
+        @strongify(self);
+        [self.currentState sendNext:@(ZCWPullRefreshLoading)];
+        [UIView animateWithDuration:0.3 animations:^{
+            UIEdgeInsets contentInset = scrollView.contentInset;
+            contentInset.top = self.oldScrollViewContentInset.top + self.frame.size.height;
+            scrollView.contentInset = contentInset;
+        }];
+        [executionSignal subscribeNext:^(id x) {
+            [self.progress sendNext:x];
+        } completed:^{
+            [self.currentState sendNext:@(ZCWPullRefreshNormal)];
+        }];
+    }];
+    
+    [self.refreshCommand.errors subscribeNext:^(id x) {
+        [self.currentState sendNext:@(ZCWPullRefreshNormal)];
+    }];
     self.lastScrollViewDisposable = [[RACSignal combineLatest:@[self.currentState, scrollViewDidScroll]] subscribeNext:^(RACTuple *values) {
         @strongify(self);
 
@@ -67,28 +84,15 @@
                     [self.currentState sendNext:@(ZCWPullRefreshPulling)];
                 } else if (_scrollView.contentInset.top != self.oldScrollViewContentInset.top) {
                     [UIView animateWithDuration:0.3 animations:^{
-                        
-                        _scrollView.contentInset = self.oldScrollViewContentInset;
+                        UIEdgeInsets contentInset = _scrollView.contentInset;
+                        contentInset.top = self.oldScrollViewContentInset.top;
+                        _scrollView.contentInset = contentInset;
                     }];
                 }
                 break;
             case ZCWPullRefreshPulling:
                 if (!isDragging && scrollViewOffsetY < -self.oldScrollViewContentInset.top - self.frame.size.height) {
-                    [self.currentState sendNext:@(ZCWPullRefreshLoading)];
-                    [UIView animateWithDuration:0.3 animations:^{
-                        UIEdgeInsets contentInset = _scrollView.contentInset;
-                        contentInset.top += self.frame.size.height;
-                        _scrollView.contentInset = contentInset;
-                    }];
-                    [[self.refreshCommand execute:self] subscribeNext:^(NSNumber *progress) {
-                        if ([progress isKindOfClass:[NSNumber class]]) {
-                            [self.progress sendNext:progress];
-                        }
-                    } error:^(NSError *error) {
-                        [self.currentState sendNext:@(ZCWPullRefreshNormal)];
-                    } completed:^{
-                        [self.currentState sendNext:@(ZCWPullRefreshNormal)];
-                    }];
+                    [self.refreshCommand execute:self];
                 } else if (isDragging && scrollViewOffsetY < -self.oldScrollViewContentInset.top) {
                     CGFloat progress = (-scrollViewOffsetY - self.oldScrollViewContentInset.top) / self.frame.size.height;
                     [self.progress sendNext:@(progress > 1.0 ? 1.0 : progress)];

@@ -9,6 +9,7 @@
 #import "ZCWExample1TableViewController.h"
 #import "ZCWPullRefreshControl.h"
 #import "ZCWLoadMoreControl.h"
+#import "HZActivityIndicatorView.h"
 
 @interface ZCWExample1TableViewController ()
 @property (nonatomic, strong) ZCWPullRefreshControl *pullRefreshControl;
@@ -34,13 +35,33 @@
     
     self.pullRefreshControl.backgroundColor = [UIColor grayColor];
     
+     HZActivityIndicatorView *activityIndicatorView = [[ HZActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
+    activityIndicatorView.center = self.pullRefreshControl.center;
+    [self.pullRefreshControl addSubview:activityIndicatorView];
     [self.pullRefreshControl.pullRefreshState subscribeNext:^(RACTuple *values) {
-        NSLog(@"PullRefresh %@ - %@", values.first, values.second);
+        ZCWPullRefreshState state = [values.first intValue];
+        switch (state) {
+            case ZCWPullRefreshNormal:
+                if (activityIndicatorView.isAnimating) {
+                    [activityIndicatorView stopAnimating];
+                }
+                break;
+            case ZCWPullRefreshLoading:
+                if (!activityIndicatorView.isAnimating) {
+                    [activityIndicatorView startAnimating];
+                }
+                break;
+            case ZCWPullRefreshPulling:
+                activityIndicatorView.progress = [values.second floatValue];
+                break;
+            default:
+                break;
+        }
     }];
     self.pullRefreshControl.refreshCommand = [[RACCommand alloc] initWithSignalBlock:^RACSignal *(id input) {
         return [RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
             __block CGFloat progress = 0;
-            [[RACScheduler mainThreadScheduler] after:[NSDate dateWithTimeIntervalSinceNow:0.1] repeatingEvery:0.1 withLeeway:0.1 schedule:^{
+            [[RACScheduler mainThreadScheduler] after:[NSDate dateWithTimeIntervalSinceNow:1] repeatingEvery:1 withLeeway:0.1 schedule:^{
                 progress += 0.1;
                 [subscriber sendNext:@(progress)];
                 if (progress > 1) {
@@ -52,17 +73,40 @@
         }];
     }];
 
+    
+    
     self.loadMoreControl = [[ZCWLoadMoreControl alloc] initWithFrame:CGRectMake(0, 0, 320.0, 65.0)];
     self.loadMoreControl.backgroundColor = [UIColor redColor];
-    
+    HZActivityIndicatorView *loadMoreActivityIndicatorView = [[ HZActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
+    loadMoreActivityIndicatorView.center = self.pullRefreshControl.center;
+    [self.loadMoreControl addSubview:loadMoreActivityIndicatorView];
+
     [self.loadMoreControl.loadMoreState subscribeNext:^(RACTuple *values) {
-        NSLog(@"LoadMore %@ - %@", values.first, values.second);
+        ZCWLoadMoreState state = [values.first intValue];
+        switch (state) {
+            case ZCWLoadMoreNormal:
+                if (loadMoreActivityIndicatorView.isAnimating) {
+                    [loadMoreActivityIndicatorView stopAnimating];
+                }
+                break;
+            case ZCWLoadMoreLoading:
+                if (!loadMoreActivityIndicatorView.isAnimating) {
+                    [loadMoreActivityIndicatorView startAnimating];
+                }
+                break;
+            case ZCWLoadMorePulling:
+                loadMoreActivityIndicatorView.progress = [values.second floatValue];
+                break;
+            default:
+                break;
+        }
+
     }];
     
     self.loadMoreControl.loadMoreCommand = [[RACCommand alloc] initWithSignalBlock:^RACSignal *(id input) {
         return [RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
             __block CGFloat progress = 0;
-            [[RACScheduler mainThreadScheduler] after:[NSDate dateWithTimeIntervalSinceNow:0.1] repeatingEvery:0.1 withLeeway:0.1 schedule:^{
+            [[RACScheduler mainThreadScheduler] after:[NSDate dateWithTimeIntervalSinceNow:1] repeatingEvery:1 withLeeway:1 schedule:^{
                 progress += 0.1;
                 [subscriber sendNext:@(progress)];
                 if (progress > 1) {
@@ -118,6 +162,10 @@
 {
 }
 
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    [self.loadMoreControl.loadMoreCommand execute:nil];
+}
 
 /*
 // Override to support conditional editing of the table view.

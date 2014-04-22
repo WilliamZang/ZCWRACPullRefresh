@@ -53,6 +53,25 @@
     [self.lastScrollViewDisposable isDisposed];
     @weakify(self);
     
+    [self.loadMoreCommand.executionSignals subscribeNext:^(RACSignal *executionSignal) {
+        @strongify(self);
+        [self.currentState sendNext:@(ZCWLoadMoreLoading)];
+        [UIView animateWithDuration:0.3 animations:^{
+            UIEdgeInsets contentInset = scrollView.contentInset;
+            contentInset.bottom = self.oldScrollViewContentInset.bottom + self.frame.size.height;
+            scrollView.contentInset = contentInset;
+        }];
+        [executionSignal subscribeNext:^(id x) {
+            [self.progress sendNext:x];
+        } completed:^{
+            [self.currentState sendNext:@(ZCWLoadMoreNormal)];
+        }];
+    }];
+    
+    [self.loadMoreCommand.errors subscribeNext:^(id x) {
+        [self.currentState sendNext:@(ZCWLoadMoreNormal)];
+    }];
+    
     self.lastScrollViewDisposable = [[RACSignal combineLatest:@[self.currentState, scrollViewDidScroll]] subscribeNext:^(RACTuple *values) {
         @strongify(self);
         
@@ -61,35 +80,21 @@
         CGFloat scrollViewOffsetY = _scrollView.contentOffset.y;
         BOOL isDragging = _scrollView.isDragging;
         
-//        NSLog(@"%d, %@, %f", stateValue, isDragging? @"YES": @"NO", scrollViewOffsetY);
         switch (stateValue) {
             case ZCWLoadMoreNormal:
                 if (isDragging && scrollViewOffsetY + _scrollView.frame.size.height > _scrollView.contentSize.height) {
                     [self.currentState sendNext:@(ZCWLoadMorePulling)];
                 } else if (_scrollView.contentInset.bottom != self.oldScrollViewContentInset.bottom) {
                     [UIView animateWithDuration:0.3 animations:^{
-                        
-                        _scrollView.contentInset = self.oldScrollViewContentInset;
+                        UIEdgeInsets contentInset = _scrollView.contentInset;
+                        contentInset.bottom = self.oldScrollViewContentInset.bottom;
+                        _scrollView.contentInset = contentInset;
                     }];
                 }
                 break;
             case ZCWLoadMorePulling:
                 if (!isDragging && scrollViewOffsetY + _scrollView.frame.size.height > _scrollView.contentSize.height + self.frame.size.height) {
-                    [self.currentState sendNext:@(ZCWLoadMoreLoading)];
-                    [UIView animateWithDuration:0.3 animations:^{
-                        UIEdgeInsets contentInset = _scrollView.contentInset;
-                        contentInset.bottom += self.frame.size.height;
-                        _scrollView.contentInset = contentInset;
-                    }];
-                    [[self.loadMoreCommand execute:self] subscribeNext:^(NSNumber *progress) {
-                        if ([progress isKindOfClass:[NSNumber class]]) {
-                            [self.progress sendNext:progress];
-                        }
-                    } error:^(NSError *error) {
-                        [self.currentState sendNext:@(ZCWLoadMoreNormal)];
-                    } completed:^{
-                        [self.currentState sendNext:@(ZCWLoadMoreNormal)];
-                    }];
+                    [self.loadMoreCommand execute:self];
                 } else if (isDragging && scrollViewOffsetY + _scrollView.frame.size.height > _scrollView.contentSize.height) {
                     CGFloat progress = (scrollViewOffsetY + _scrollView.frame.size.height - _scrollView.contentSize.height) / self.frame.size.height;
                     [self.progress sendNext:@(progress > 1.0 ? 1.0 : progress)];
