@@ -15,6 +15,8 @@
 @property (nonatomic, strong) RACSubject *progress;
 @property (nonatomic, strong) RACDisposable *lastScrollViewDisposable;
 @property (nonatomic, assign) UIEdgeInsets oldScrollViewContentInset;
+
+- (void)defaultSetup;
 @end
 
 @implementation ZCWLoadMoreControl
@@ -23,13 +25,23 @@
 {
     self = [super initWithFrame:frame];
     if (self) {
-        self.currentState = [RACReplaySubject replaySubjectWithCapacity:1];
-        [self.currentState sendNext:@(ZCWLoadMoreNormal)];
-        self.progress = [RACSubject subject];
-        [self.progress sendNext:@(0.0f)];
-        _loadMoreState = [self.currentState combineLatestWith:self.progress];
+        [self defaultSetup];
     }
     return self;
+}
+
+- (void)awakeFromNib
+{
+    [self defaultSetup];
+}
+
+- (void)defaultSetup
+{
+    self.currentState = [RACReplaySubject replaySubjectWithCapacity:1];
+    [self.currentState sendNext:@(ZCWLoadMoreNormal)];
+    self.progress = [RACSubject subject];
+    [self.progress sendNext:@(0.0f)];
+    _loadMoreState = [self.currentState combineLatestWith:self.progress];
 }
 
 - (void)addToScrollView:(UIScrollView *)scrollView
