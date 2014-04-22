@@ -2,7 +2,7 @@
 Pod::Spec.new do |s|
 
   s.name         = "ZCWRACPullRefresh"
-  s.version      = "0.1.2"
+  s.version      = "0.1.3"
   s.summary      = "A pull refresh control with RAC"
 
   s.description  = <<-DESC
@@ -24,7 +24,7 @@ guide
 
   s.platform     = :ios, '6.0'
 
-  s.source       = { :git => "https://github.com/WilliamZang/ZCWRACPullRefresh.git", :tag => "0.1.2" }
+  s.source       = { :git => "https://github.com/WilliamZang/ZCWRACPullRefresh.git", :tag => "0.1.3" }
 
   s.source_files  = 'ZCWTableViewPullRefresh/*.{h,m}'
 
