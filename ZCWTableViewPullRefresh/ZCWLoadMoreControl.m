@@ -63,6 +63,7 @@
         CGRect selfFrame = self.frame;
         selfFrame.origin.y = size.height;
         self.frame = selfFrame;
+        self.hidden = ((CGRectGetHeight(scrollView.frame) - size.height) > CGRectGetHeight(self.frame));
     }];
     
     
@@ -92,7 +93,9 @@
     
     self.lastScrollViewDisposable = [[RACSignal combineLatest:@[self.currentState, scrollViewDidScroll]] subscribeNext:^(RACTuple *values) {
         @strongify(self);
-        
+        if (self.hidden) {
+            return;
+        }
         ZCWLoadMoreState stateValue = [values.first intValue];
         UIScrollView *_scrollView = [values.second first];
         CGFloat scrollViewOffsetY = _scrollView.contentOffset.y;
